@@ -18,7 +18,7 @@ router.get("/api/health", () => {
 
 // Start server
 serve({
-  port: 3000,
+  port: process.env.PORT ? parseInt(process.env.PORT) : 3000,
   async fetch(req: Request): Promise<Response> {
     return router.handle(req);
   },
