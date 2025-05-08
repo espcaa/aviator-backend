@@ -8,5 +8,10 @@
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "nocodb-sdk": "^0.263.1",
+    "nodemailer": "^7.0.3"
   }
 }

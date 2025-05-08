@@ -1,1 +1,27 @@
-console.log("Hello via Bun!");
+// index.ts
+import { serve } from "bun";
+import { Router } from "./router";
+import { registerOtpRoutes } from "./routes/otp";
+// Create router instance
+const router = new Router();
+registerOtpRoutes(router);
+
+// Health check route
+router.get("/api/health", () => {
+  return new Response(
+    JSON.stringify({ status: "healthy", timestamp: new Date().toISOString() }),
+    {
+      headers: { "Content-Type": "application/json" },
+    },
+  );
+});
+
+// Start server
+serve({
+  port: 3000,
+  async fetch(req: Request): Promise<Response> {
+    return router.handle(req);
+  },
+});
+
+console.log("Server running at http://localhost:3000");
