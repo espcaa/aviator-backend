@@ -20,7 +20,7 @@ async function saveOtpToNocoDB(email: string, otp: string) {
   try {
     const { data, error } = await supabase
       .from("otp")
-      .insert([{ email, otp }])
+      .insert([{ email, otp: String(otp) }])
       .select();
   } catch (error) {
     console.error("Failed to save OTP to NocoDB:", error);
@@ -78,8 +78,8 @@ export function registerOtpRoutes(router: Router) {
       }
 
       // verify otp provided and the one in the database match
-      console.log("Expected otp" + data[0].otp);
-      console.log("Provided otp" + otp);
+      console.log("Expected otp: " + String(data[0].otp));
+      console.log("Provided otp: " + String(otp));
 
       if (String(data[0].otp) !== String(otp)) {
         return new Response(JSON.stringify({ error: "Invalid OTP" }), {
