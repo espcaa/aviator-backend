@@ -41,7 +41,7 @@ function registerUserRoutes(router: Router) {
       const { error } = await supabase.from("users").insert([
         {
           email,
-          password: hashedPassword,
+          password_hash: hashedPassword,
         },
       ]);
 

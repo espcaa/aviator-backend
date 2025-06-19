@@ -23,7 +23,7 @@ async function saveOtpToNocoDB(email: string, otp: string) {
       .insert([{ email, otp: String(otp) }])
       .select();
   } catch (error) {
-    console.error("Failed to save OTP to NocoDB:", error);
+    console.error("Failed to save OTP to Supabase:", error);
   }
 }
 
