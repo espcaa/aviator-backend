@@ -26,6 +26,7 @@ function registerUserRoutes(router: Router) {
   // User registration route
   router.post("/api/users/createUser", async (req: Request) => {
     try {
+      console.log("Received request to create user");
       const { email, password }: { email: string; password: string } =
         await req.json();
 
