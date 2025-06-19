@@ -49,7 +49,10 @@ export class Router {
       }
     }
 
-    return new Response("Not Found", { status: 404 });
+    return new Response(JSON.stringify({ message: "Not Found" }), {
+      status: 404,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   matchRoute(path: string, routePath: string): boolean {
