@@ -19,7 +19,7 @@ async function verifyPassword(
 
 function registerUserRoutes(router: Router) {
   // User registration route
-  router.post("/api/createUser", async (req: Request) => {
+  router.post("/api/users/createUser", async (req: Request) => {
     try {
       const { email, password }: { email: string; password: string } =
         await req.json();
