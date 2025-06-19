@@ -2,9 +2,11 @@
 import { serve } from "bun";
 import { Router } from "./router";
 import { registerOtpRoutes } from "./routes/otp";
+import { registerUserRoutes } from "./routes/users";
 // Create router instance
 const router = new Router();
 registerOtpRoutes(router);
+registerUserRoutes(router);
 
 // Health check route
 router.get("/api/health", () => {
