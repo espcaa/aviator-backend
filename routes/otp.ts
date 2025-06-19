@@ -1,5 +1,6 @@
+/// <reference lib="dom" />
 import { Router } from "../router";
-import axios from "axios";
+
 import { supabase } from "../utils/database";
 import { sendEmail } from "../utils/email";
 import { getEmailHtml } from "../utils/getEmailHtml";

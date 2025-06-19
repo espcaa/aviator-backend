@@ -1,9 +1,14 @@
+/// <reference lib="dom" />
 import type { Router } from "../router";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { supabase } from "../utils/database";
 
 const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET is not defined");
+}
+const jwtSecret = JWT_SECRET as string;
 
 async function hashPassword(password: string): Promise<string> {
   const saltRounds = 10;
@@ -55,10 +60,11 @@ function registerUserRoutes(router: Router) {
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
     } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
       return new Response(
         JSON.stringify({
           error: "Internal server error",
-          details: err.message,
+          details: message,
         }),
         { status: 500, headers: { "Content-Type": "application/json" } },
       );
@@ -95,7 +101,14 @@ function registerUserRoutes(router: Router) {
       const user = users[0];
 
       // Verify the password
+
+      if (!user) {
+        // Handle user being undefined, e.g., return an error or throw an exception
+        throw new Error("User not found");
+      }
+
       const isPasswordValid = await verifyPassword(password, user.password);
+
       if (!isPasswordValid) {
         return new Response(
           JSON.stringify({ error: "Invalid email or password" }),
@@ -104,8 +117,8 @@ function registerUserRoutes(router: Router) {
       }
 
       // Generate JWT token
-      const token = jwt.sign({ email: user.email }, JWT_SECRET, {
-        expiresIn: "1h",
+      const token = jwt.sign({ email: user.email }, jwtSecret, {
+        expiresIn: "1h", // Token expiration time
       });
 
       return new Response(
@@ -113,10 +126,11 @@ function registerUserRoutes(router: Router) {
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
     } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
       return new Response(
         JSON.stringify({
           error: "Internal server error",
-          details: err.message,
+          details: message,
         }),
         { status: 500, headers: { "Content-Type": "application/json" } },
       );

@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 import type { HttpMethod, RouteHandler, Routes } from "./types";
 
 export class Router {
@@ -60,8 +61,8 @@ export class Router {
     if (routeParts.length !== pathParts.length) return false;
 
     for (let i = 0; i < routeParts.length; i++) {
-      if (routeParts[i].startsWith(":")) continue; // Match any param
-      if (routeParts[i] !== pathParts[i]) return false;
+      if (routeParts[i]!.startsWith(":")) continue; // using ! to assert non-null
+      if (routeParts[i]! !== pathParts[i]) return false;
     }
 
     return true;
