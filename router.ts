@@ -48,7 +48,8 @@ export class Router {
         return await routeHandler(req);
       }
     }
-
+    // If no route matched, return 404
+    console.warn(`No route found for ${method} ${path}`);
     return new Response(JSON.stringify({ message: "Not Found" }), {
       status: 404,
       headers: { "Content-Type": "application/json" },
