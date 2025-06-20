@@ -3,10 +3,12 @@ import { serve } from "bun";
 import { Router } from "./router";
 import { registerOtpRoutes } from "./routes/otp";
 import { registerUserRoutes } from "./routes/users";
+import { registerSessionRoutes } from "./routes/session";
 // Create router instance
 const router = new Router();
 registerOtpRoutes(router);
 registerUserRoutes(router);
+registerSessionRoutes(router);
 
 // Health check route
 router.get("/api/health", () => {

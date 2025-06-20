@@ -10,9 +10,9 @@ if (!JWT_SECRET) {
 }
 const jwtSecret = JWT_SECRET as string;
 
-function registerSessionRoutes(router: Router) {
+export function registerSessionRoutes(router: Router) {
   // Session creation route
-  router.post("/api/sessions/login", async (req: Request) => {
+  router.post("/api/sessions/getRefreshToken", async (req: Request) => {
     try {
       const { email, password }: { email: string; password: string } =
         await req.json();
@@ -51,7 +51,60 @@ function registerSessionRoutes(router: Router) {
       // Generate a jwt token
 
       const token = jwt.sign(
-        { userId: user.id, email: user.email },
+        { userId: user.id, email: user.email, refresher: true },
+        jwtSecret,
+        {
+          expiresIn: "1m",
+        },
+      );
+
+      return new Response(
+        JSON.stringify({ message: "Login successful", token }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      return new Response(
+        JSON.stringify({
+          error: "Internal server error",
+          details: message,
+        }),
+        { status: 500, headers: { "Content-Type": "application/json" } },
+      );
+    }
+  });
+  router.post("/api/sessions/refresh", async (req: Request) => {
+    try {
+      const { token }: { token: string } = await req.json();
+
+      if (!token) {
+        return new Response(JSON.stringify({ error: "Token is required" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // Verify the token
+      const decoded = jwt.verify(token, jwtSecret);
+      if (!decoded || typeof decoded === "string") {
+        return new Response(JSON.stringify({ error: "Invalid token" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // Verify if the token is a refresher
+
+      if (!(decoded as any).refresher) {
+        return new Response(JSON.stringify({ error: "Invalid token" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // Generate a new token
+      const newToken = jwt.sign(
+        { userId: (decoded as any).userId, email: (decoded as any).email },
         jwtSecret,
         {
           expiresIn: "1h",
@@ -59,7 +112,10 @@ function registerSessionRoutes(router: Router) {
       );
 
       return new Response(
-        JSON.stringify({ message: "Login successful", token }),
+        JSON.stringify({
+          message: "Token refreshed successfully",
+          token: newToken,
+        }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
     } catch (err) {
