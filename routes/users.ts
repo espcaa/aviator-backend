@@ -1,8 +1,28 @@
 /// <reference lib="dom" />
+
 import type { Router } from "../router";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { supabase } from "../utils/database";
+
+const emailRateLimitMap = new Map<string, number[]>();
+
+function isRateLimited(ip: string, limit = 5, windowMs = 2_000): boolean {
+  const now = Date.now();
+  const timestamps = emailRateLimitMap.get(ip) || [];
+
+  // Filter out timestamps older than windowMs
+  const recentTimestamps = timestamps.filter((ts) => now - ts < windowMs);
+  emailRateLimitMap.set(ip, recentTimestamps);
+
+  if (recentTimestamps.length >= limit) {
+    return true; // rate limited
+  }
+
+  recentTimestamps.push(now);
+  emailRateLimitMap.set(ip, recentTimestamps);
+  return false;
+}
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
@@ -135,6 +155,52 @@ function registerUserRoutes(router: Router) {
         { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }
+  });
+  router.get("/api/users/checkEmail", async (req: Request) => {
+    const url = new URL(req.url);
+    const email = url.searchParams.get("email");
+    const ip = req.headers.get("x-forwarded-for") || "unknown";
+
+    if (!email) {
+      return new Response(JSON.stringify({ error: "Email is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Apply rate limiting
+    if (isRateLimited(ip)) {
+      return new Response(
+        JSON.stringify({ error: "Too many requests, please try again later." }),
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            "Retry-After": "2", // seconds
+          },
+        },
+      );
+    }
+
+    const { data, error } = await supabase
+      .from("users")
+      .select("id")
+      .eq("email", email)
+      .limit(1);
+
+    if (error) {
+      return new Response(
+        JSON.stringify({ error: "Database error", details: error.message }),
+        { status: 500, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    const available = !data || data.length === 0;
+
+    return new Response(JSON.stringify({ available }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   });
 }
 
