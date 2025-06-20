@@ -160,6 +160,8 @@ function registerUserRoutes(router: Router) {
     const url = new URL(req.url);
     const email = url.searchParams.get("email");
     const ip = req.headers.get("x-forwarded-for") || "unknown";
+    console.log("IP address:", ip);
+    console.log("Email to check:", email);
 
     if (!email) {
       return new Response(JSON.stringify({ error: "Email is required" }), {
@@ -196,6 +198,7 @@ function registerUserRoutes(router: Router) {
     }
 
     const available = !data || data.length === 0;
+    console.log("Email availability:", available);
 
     return new Response(JSON.stringify({ available }), {
       status: 200,
