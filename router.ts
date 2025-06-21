@@ -9,7 +9,7 @@ export class Router {
     DELETE: new Map(),
   };
 
-  get(path: string, shandler: RouteHandler): Router {
+  get(path: string, handler: RouteHandler): Router {
     this.routes.GET.set(path, handler);
     return this;
   }
