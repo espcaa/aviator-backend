@@ -9,7 +9,7 @@ export class Router {
     DELETE: new Map(),
   };
 
-  get(path: string, handler: RouteHandler): Router {
+  get(path: string, shandler: RouteHandler): Router {
     this.routes.GET.set(path, handler);
     return this;
   }
@@ -33,6 +33,8 @@ export class Router {
     const url = new URL(req.url);
     const path = url.pathname;
     const method = req.method as HttpMethod;
+
+    console.log(`Handling ${method} request for ${path}`);
 
     // Check for exact route match
     const handler = this.routes[method]?.get(path);
