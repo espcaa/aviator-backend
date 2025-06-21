@@ -56,6 +56,45 @@ function registerUserRoutes(router: Router) {
         );
       }
 
+      // Sanitize the password
+      if (password.length < 8) {
+        return new Response(
+          JSON.stringify({ error: "Password must be at least 8 characters" }),
+          { status: 400, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      // Check if email is already registered
+      const { data: existingUsers, error: fetchError } = await supabase
+        .from("users")
+        .select("email")
+        .eq("email", email)
+        .limit(1);
+      if (fetchError) {
+        return new Response(
+          JSON.stringify({
+            error: "Failed to check existing users",
+            details: fetchError.message,
+          }),
+          { status: 500, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      if (existingUsers && existingUsers.length > 0) {
+        return new Response(
+          JSON.stringify({ error: "Email already registered" }),
+          { status: 400, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      // Remove any strange characters from the password like leading/trailing spaces
+      let sanpassword = password.trim();
+      if (!sanpassword || sanpassword.length < 8) {
+        return new Response(
+          JSON.stringify({ error: "Password must be at least 8 characters" }),
+          { status: 400, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      // Hash the password
+
       const hashedPassword = await hashPassword(password);
 
       const { error } = await supabase.from("users").insert([
@@ -107,7 +146,7 @@ function registerUserRoutes(router: Router) {
       // Fetch user from the database
       const { data: users, error } = await supabase
         .from("users")
-        .select("email, password")
+        .select("email, password_hash")
         .eq("email", email)
         .limit(1);
 
@@ -127,7 +166,10 @@ function registerUserRoutes(router: Router) {
         throw new Error("User not found");
       }
 
-      const isPasswordValid = await verifyPassword(password, user.password);
+      const isPasswordValid = await verifyPassword(
+        password,
+        user.password_hash,
+      );
 
       if (!isPasswordValid) {
         return new Response(
