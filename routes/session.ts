@@ -31,6 +31,7 @@ export function registerSessionRoutes(router: Router) {
         .eq("email", email)
         .single();
       if (userError || !user) {
+        console.error("User not found or error fetching user:", userError);
         return new Response(
           JSON.stringify({ error: "Invalid email or password" }),
           { status: 401, headers: { "Content-Type": "application/json" } },
@@ -42,6 +43,11 @@ export function registerSessionRoutes(router: Router) {
         user.password_hash,
       );
       if (!isPasswordValid) {
+        console.error("Invalid password for user:", email);
+        console.error("User data:", user);
+        console.error("Password hash:", user.password_hash);
+        console.error("Provided password:", password);
+        console.error("Password verification failed");
         return new Response(
           JSON.stringify({ error: "Invalid email or password" }),
           { status: 401, headers: { "Content-Type": "application/json" } },
