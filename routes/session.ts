@@ -66,7 +66,7 @@ export function registerSessionRoutes(router: Router) {
       );
 
       return new Response(
-        JSON.stringify({ message: "Login successful", token }),
+        JSON.stringify({ message: "Login successful", refreshToken }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
     } catch (err) {
@@ -80,38 +80,51 @@ export function registerSessionRoutes(router: Router) {
       );
     }
   });
-  router.post("/api/sessions/refresh", async (req: Request) => {
+  // Login with a refresh token
+  router.post("/api/sessions/login", async (req: Request) => {
     try {
-      const { token }: { token: string } = await req.json();
+      // get the token from the authorization bearer
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return new Response(
+          JSON.stringify({ error: "Authorization header is required" }),
+          { status: 401, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      const refreshToken = authHeader.split(" ")[1];
+      if (!refreshToken) {
+        return new Response(
+          JSON.stringify({ error: "Refresh token is required" }),
+          { status: 400, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      // Verify the refresh token with bcrypt
 
-      if (!token) {
-        return new Response(JSON.stringify({ error: "Token is required" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        });
+      let decoded;
+      try {
+        decoded = jwt.verify(refreshToken, jwtSecret) as {
+          userId: string;
+          email: string;
+          refresher: boolean;
+        };
+      } catch (err) {
+        console.error("Invalid refresh token:", err);
+        return new Response(
+          JSON.stringify({ error: "Invalid refresh token" }),
+          { status: 401, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      // Check if the token is a refresher
+      if (!decoded.refresher) {
+        return new Response(
+          JSON.stringify({ error: "Invalid refresh token" }),
+          { status: 401, headers: { "Content-Type": "application/json" } },
+        );
       }
 
-      // Verify the token
-      const decoded = jwt.verify(token, jwtSecret);
-      if (!decoded || typeof decoded === "string") {
-        return new Response(JSON.stringify({ error: "Invalid token" }), {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-
-      // Verify if the token is a refresher
-
-      if (!(decoded as any).refresher) {
-        return new Response(JSON.stringify({ error: "Invalid token" }), {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-
-      // Generate a new token
-      const newToken = jwt.sign(
-        { userId: (decoded as any).userId, email: (decoded as any).email },
+      // Generate a new access token
+      const accessToken = jwt.sign(
+        { userId: decoded.userId, email: decoded.email },
         jwtSecret,
         {
           expiresIn: "1h",
@@ -119,10 +132,7 @@ export function registerSessionRoutes(router: Router) {
       );
 
       return new Response(
-        JSON.stringify({
-          message: "Token refreshed successfully",
-          token: newToken,
-        }),
+        JSON.stringify({ token }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
     } catch (err) {
@@ -135,5 +145,5 @@ export function registerSessionRoutes(router: Router) {
         { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }
-  });
+  }
 }
