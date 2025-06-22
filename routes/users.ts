@@ -41,6 +41,7 @@ function registerUserRoutes(router: Router) {
       }
 
       let sanitizedPassword = sanitizePassword(password);
+      console.log("Sanitized password:", sanitizedPassword);
 
       // Check if email is already registered
       const { data: existingUsers, error: fetchError } = await supabase
