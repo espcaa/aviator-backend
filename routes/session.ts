@@ -66,7 +66,7 @@ export function registerSessionRoutes(router: Router) {
       );
 
       return new Response(
-        JSON.stringify({ message: "Login successful", refreshToken }),
+        JSON.stringify({ message: "Login successful", token }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
     } catch (err) {
@@ -131,10 +131,10 @@ export function registerSessionRoutes(router: Router) {
         },
       );
 
-      return new Response(
-        JSON.stringify({ token : accessToken }),
-        { status: 200, headers: { "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ token: accessToken }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       return new Response(
@@ -145,5 +145,5 @@ export function registerSessionRoutes(router: Router) {
         { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }
-  }
+  });
 }
