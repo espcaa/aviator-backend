@@ -61,7 +61,8 @@ export function registerSessionRoutes(router: Router) {
         { userId: user.id, email: user.email, refresher: true },
         jwtSecret,
         {
-          expiresIn: "1m",
+          // 1 month expiration
+          expiresIn: "30d",
         },
       );
 
