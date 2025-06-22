@@ -132,7 +132,7 @@ export function registerSessionRoutes(router: Router) {
       );
 
       return new Response(
-        JSON.stringify({ token }),
+        JSON.stringify({ token : accessToken }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
     } catch (err) {
