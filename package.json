@@ -10,11 +10,11 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@mapbox/mapbox-sdk": "^0.16.1",
     "@supabase/supabase-js": "^2.49.4",
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.9",
     "bcrypt": "^5.1.1",
-    "install": "^0.13.0",
     "jsonwebtoken": "^9.0.2",
     "nocodb-sdk": "^0.263.1",
     "nodemailer": "^7.0.3"

@@ -125,7 +125,7 @@ export function registerSessionRoutes(router: Router) {
 
       // Generate a new access token
       const accessToken = jwt.sign(
-        { userId: decoded.userId, email: decoded.email },
+        { userId: decoded.userId, email: decoded.email, session: true },
         jwtSecret,
         {
           expiresIn: "1h",
