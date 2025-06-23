@@ -30,7 +30,11 @@ function registerUserRoutes(router: Router) {
   // User registration route
   router.post("/api/users/createUser", async (req: Request) => {
     try {
-      const { email, password }: { email: string; password: string } =
+      const {
+        email,
+        password,
+        full_name,
+      }: { email: string; password: string; full_name: string } =
         await req.json();
 
       if (!email || !password) {
@@ -38,6 +42,21 @@ function registerUserRoutes(router: Router) {
           JSON.stringify({ error: "Email and password are required" }),
           { status: 400, headers: { "Content-Type": "application/json" } },
         );
+      }
+
+      let fixedfullname = full_name || "";
+
+      if (!full_name && email) {
+        // Generate it with the email
+        //@ts-ignore
+        const nameParts = email.split("@")[0].split(".");
+        if (nameParts.length > 1) {
+          // Join the parts with a space
+          fixedfullname = nameParts.join(" ");
+        } else {
+          // Use the email prefix as the full name
+          fixedfullname = nameParts[0] as string;
+        }
       }
 
       let sanitizedPassword = sanitizePassword(password);
@@ -81,6 +100,7 @@ function registerUserRoutes(router: Router) {
         {
           email,
           password_hash: hashedPassword,
+          full_name: fixedfullname,
         },
       ]);
 
