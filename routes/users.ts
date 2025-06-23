@@ -167,10 +167,9 @@ function registerUserRoutes(router: Router) {
   });
   router.post("/api/users/getUserInfo", async (req: Request) => {
     try {
-      const { email, token }: { email: string; token: string } =
-        await req.json();
+      const { token }: { token: string } = await req.json();
 
-      if (!email || !token) {
+      if (!token) {
         return new Response(
           JSON.stringify({ error: "Email and token are required" }),
           { status: 400, headers: { "Content-Type": "application/json" } },
@@ -178,6 +177,7 @@ function registerUserRoutes(router: Router) {
       }
 
       // Verify the JWT token is a session one
+      let email = "";
 
       try {
         const decoded = jwt.verify(token, jwtSecret);
@@ -186,6 +186,15 @@ function registerUserRoutes(router: Router) {
             status: 401,
             headers: { "Content-Type": "application/json" },
           });
+        } else {
+          // Set email from the decoded token
+          email = decoded.email as string;
+          if (!email) {
+            return new Response(
+              JSON.stringify({ error: "Email not found in token" }),
+              { status: 401, headers: { "Content-Type": "application/json" } },
+            );
+          }
         }
       } catch (err) {
         const errstring = err instanceof Error ? err.message : "Unknown error";
