@@ -4,11 +4,13 @@ import { Router } from "./router";
 import { registerOtpRoutes } from "./routes/otp";
 import { registerUserRoutes } from "./routes/users";
 import { registerSessionRoutes } from "./routes/session";
+import { registerMapRoutes } from "./routes/map";
 // Create router instance
 const router = new Router();
 registerOtpRoutes(router);
 registerUserRoutes(router);
 registerSessionRoutes(router);
+registerMapRoutes(router);
 
 // Health check route
 router.get("/api/health", () => {
