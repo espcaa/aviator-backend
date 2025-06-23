@@ -12,7 +12,10 @@ if (!MAPBOX_TOKEN) {
 import jwt from "jsonwebtoken";
 const jwtSecret = JWT_SECRET as string;
 const mbxClient = require("@mapbox/mapbox-sdk");
+const tokenClient = require("@mapbox/mapbox-sdk/services/tokens");
+
 const baseClient = mbxClient({ accessToken: MAPBOX_TOKEN });
+const tokensService = tokenClient(baseClient);
 
 export function registerMapRoutes(router: Router) {
   router.post("/api/maps/getToken", async (req: Request) => {
@@ -51,7 +54,7 @@ export function registerMapRoutes(router: Router) {
       // Token is valid, call mapbox to get a nice map read token!
       const expirationDate = new Date(Date.now() + 3600000);
 
-      baseClient.tokens
+      tokensService
         .createTemporaryToken({
           note: `Token for user ${payload.email}`,
           // This is a read-only token for map access
