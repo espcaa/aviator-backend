@@ -51,7 +51,7 @@ export function registerMapRoutes(router: Router) {
       // Token is valid, call mapbox to get a nice map read token!
       const expirationDate = new Date(Date.now() + 3600000);
 
-      baseClient
+      baseClient.tokens
         .createTemporaryToken({
           note: `Token for user ${payload.email}`,
           // This is a read-only token for map access
