@@ -75,6 +75,7 @@ export function registerMapRoutes(router: Router) {
         { status: 500, headers: { "Content-Type": "application/json" } },
       );
     } catch (error) {
+      console.log(error);
       return new Response(JSON.stringify({ error: "Server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
