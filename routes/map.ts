@@ -56,7 +56,6 @@ export function registerMapRoutes(router: Router) {
 
       tokensService
         .createTemporaryToken({
-          note: `Token for user ${payload.email}`,
           // This is a read-only token for map access
           scopes: ["styles:read", "tilesets:read"],
           // 1 hour expiry
