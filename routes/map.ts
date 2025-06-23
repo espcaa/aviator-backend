@@ -1,6 +1,8 @@
-// Get a token in exchange of a session token :)
+// This route provides a map token using Mapbox and a verified session token.
 
 import type { Router } from "../router";
+import jwt from "jsonwebtoken";
+
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET is not defined");
@@ -9,8 +11,9 @@ const MAPBOX_TOKEN = process.env.MAPBOX_TOKEN;
 if (!MAPBOX_TOKEN) {
   throw new Error("MAPBOX_TOKEN is not defined");
 }
-import jwt from "jsonwebtoken";
+
 const jwtSecret = JWT_SECRET as string;
+
 const mbxClient = require("@mapbox/mapbox-sdk");
 const tokenClient = require("@mapbox/mapbox-sdk/services/tokens");
 
@@ -27,8 +30,6 @@ export function registerMapRoutes(router: Router) {
           { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
-
-      // Verify the session token
 
       let payload;
       try {
@@ -51,33 +52,28 @@ export function registerMapRoutes(router: Router) {
         );
       }
 
-      // Token is valid, call mapbox to get a nice map read token!
+      // Generate a temporary Mapbox token valid for 1 hour
       const expirationDate = new Date(Date.now() + 3600000);
-
-      await tokensService
+      const tokenResponse = await tokensService
         .createTemporaryToken({
-          // This is a read-only token for map access
           scopes: ["styles:read", "tilesets:read"],
-          // 1 hour expiry
           expires: expirationDate.toISOString(),
         })
-        .send()
-        .then((response: any) => {
-          const token = response.body;
-          return new Response(JSON.stringify({ token: token.token }), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          });
-        });
+        .send();
 
-      // If this failed, then send a server error response
+      if (tokenResponse?.body?.token) {
+        return new Response(
+          JSON.stringify({ token: tokenResponse.body.token }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
 
       return new Response(
         JSON.stringify({ error: "Failed to generate map token" }),
         { status: 500, headers: { "Content-Type": "application/json" } },
       );
     } catch (error) {
-      console.log(error);
+      console.error("Server error:", error);
       return new Response(JSON.stringify({ error: "Server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
