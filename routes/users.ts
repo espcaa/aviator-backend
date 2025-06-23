@@ -165,6 +165,71 @@ function registerUserRoutes(router: Router) {
       headers: { "Content-Type": "application/json" },
     });
   });
+  router.post("/api/users/getUserInfo", async (req: Request) => {
+    try {
+      const { email, token }: { email: string; token: string } =
+        await req.json();
+
+      if (!email || !token) {
+        return new Response(
+          JSON.stringify({ error: "Email and token are required" }),
+          { status: 400, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      // Verify the JWT token is a session one
+
+      try {
+        const decoded = jwt.verify(token, jwtSecret);
+        if (!decoded || typeof decoded !== "object" || !decoded.userId) {
+          return new Response(JSON.stringify({ error: "Invalid token" }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+      } catch (err) {
+        const errstring = err instanceof Error ? err.message : "Unknown error";
+        return new Response(
+          JSON.stringify({ error: "Invalid token", errstring }),
+          { status: 401, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      const { data, error } = await supabase
+        .from("users")
+        .select("id, email, full_name")
+        .eq("email", email)
+        .single();
+
+      if (error) {
+        return new Response(
+          JSON.stringify({
+            error: "Failed to fetch user info",
+            details: error.message,
+          }),
+          { status: 500, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      if (!data) {
+        return new Response(JSON.stringify({ error: "User not found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify(data), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      return new Response(
+        JSON.stringify({ error: "Internal server error", details: message }),
+        { status: 500, headers: { "Content-Type": "application/json" } },
+      );
+    }
+  });
 }
 
 export { registerUserRoutes };
