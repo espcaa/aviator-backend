@@ -54,7 +54,7 @@ export function registerMapRoutes(router: Router) {
       // Token is valid, call mapbox to get a nice map read token!
       const expirationDate = new Date(Date.now() + 3600000);
 
-      tokensService
+      await tokensService
         .createTemporaryToken({
           // This is a read-only token for map access
           scopes: ["styles:read", "tilesets:read"],
