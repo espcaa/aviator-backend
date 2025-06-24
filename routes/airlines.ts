@@ -66,7 +66,7 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
 
   // Prepare the query with placeholders for parameters
   const query = db.query(`
-    SELECT * FROM airlines
+    SELECT * FROM airline
     WHERE name LIKE ? OR code LIKE ?
     ORDER BY name ASC
   `);
