@@ -14,6 +14,8 @@ export function registerLogoRoute(router: Router) {
     try {
       // Return the file from "@/logos/${icao}.png"
       const logoPath = `logos/${icao}.png`;
+      console.log("Fetching logo from path:", logoPath);
+
       const logo = await fetch(logoPath);
       if (!logo.ok) {
         return new Response(JSON.stringify({ error: "Logo not found" }), {
