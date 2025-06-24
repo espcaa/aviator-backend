@@ -1,6 +1,14 @@
 import type { Router } from "../router";
+import { Database } from "bun:sqlite";
 
-function registerAirlinesRoutes(router:Router) {
+import jwt from "jsonwebtoken";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET is not defined");
+}
+const jwtSecret = JWT_SECRET as string;
+
+function registerAirlinesRoutes(router: Router) {
   router.post("/api/airlines/getAirlines", async (req: Request) => {
     try {
       const { sessionToken, searchString } = await req.json();
@@ -33,12 +41,12 @@ function registerAirlinesRoutes(router:Router) {
       }
 
       // Fetch airlines data from the database or external API
-      const airlinesData = await fetchAirlinesData();
+      const airlinesData = await fetchAirlinesData(searchString);
 
-      return new Response(
-        JSON.stringify({ airlines: airlinesData }),
-        { status: 200, headers: { "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ airlines: airlinesData }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
     } catch (error) {
       console.error("Server error:", error);
       return new Response(JSON.stringify({ error: "Server error" }), {
@@ -46,5 +54,17 @@ function registerAirlinesRoutes(router:Router) {
         headers: { "Content-Type": "application/json" },
       });
     }
-  }
+  });
+}
+
+// Fetch data from sqlite airlines.db
+
+async function fetchAirlinesData(searchString: string) {
+  const db = new Database("airlines.db");
+  const query = db.query(`
+    SELECT * FROM airlines
+    WHERE name LIKE ? OR code LIKE ?
+    ORDER BY name ASC
+  `);
+  return query.get();
 }
