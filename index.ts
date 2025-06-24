@@ -6,6 +6,7 @@ import { registerUserRoutes } from "./routes/users";
 import { registerSessionRoutes } from "./routes/session";
 import { registerMapRoutes } from "./routes/map";
 import { registerAirlinesRoutes } from "./routes/airlines";
+import { registerLogoRoute } from "./routes/logo";
 // Create router instance
 const router = new Router();
 registerOtpRoutes(router);
@@ -13,6 +14,7 @@ registerUserRoutes(router);
 registerSessionRoutes(router);
 registerMapRoutes(router);
 registerAirlinesRoutes(router);
+registerLogoRoute(router);
 
 // Health check route
 router.get("/api/health", () => {
