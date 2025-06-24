@@ -8,7 +8,7 @@ if (!JWT_SECRET) {
 }
 const jwtSecret = JWT_SECRET as string;
 
-function registerAirlinesRoutes(router: Router) {
+export function registerAirlinesRoutes(router: Router) {
   router.post("/api/airlines/getAirlines", async (req: Request) => {
     try {
       const { sessionToken, searchString } = await req.json();
