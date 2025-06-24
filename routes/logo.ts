@@ -1,7 +1,7 @@
 import type { Router } from "../router";
 
 export function registerLogoRoute(router: Router) {
-  router.get("/api/logo", async (req: Request) => {
+  router.get("/api/logo/getLogo", async (req: Request) => {
     // get the icao code from the query parameters
     const url = new URL(req.url);
     const icao = url.searchParams.get("icao");
