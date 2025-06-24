@@ -1,4 +1,6 @@
 import type { Router } from "../router";
+import { readFile } from "fs/promises";
+import { join } from "path";
 
 export function registerLogoRoute(router: Router) {
   router.get("/api/logo/getLogo", async (req: Request) => {
@@ -13,18 +15,11 @@ export function registerLogoRoute(router: Router) {
     }
     try {
       // Return the file from "@/logos/${icao}.png"
-      const logoPath = `logos/${icao}.png`;
+      const logoPath = join(__dirname, "../logos", `${icao}.png`);
       console.log("Fetching logo from path:", logoPath);
 
-      const logo = await fetch(logoPath);
-      if (!logo.ok) {
-        return new Response(JSON.stringify({ error: "Logo not found" }), {
-          status: 404,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-      const logoBlob = await logo.blob();
-      return new Response(logoBlob, {
+      const logoBuffer = await readFile(logoPath);
+      return new Response(logoBuffer, {
         status: 200,
         headers: {
           "Content-Type": "image/png",
