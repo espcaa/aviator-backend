@@ -106,11 +106,6 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
     }
   });
 
-  result = result.filter((airline: any) => {
-    const icaoRegex = /^[A-Z]{4}$/;
-    return icaoRegex.test(airline.code);
-  });
-
   if (searchLimit > 0) {
     if (exactCodeResult) {
       return [exactCodeResult, ...result].slice(0, searchLimit);
