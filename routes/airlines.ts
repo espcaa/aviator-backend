@@ -83,7 +83,6 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
   const exactCodeResult = exactCodeQuery.get(searchString.toUpperCase());
   const exactCodeTypedResult = exactCodeResult as AirlineResult | undefined;
 
-  // Define the struct for a db result
   type AirlineResult = {
     id: number;
     name: string;
@@ -92,34 +91,29 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
   };
 
   if (exactCodeTypedResult) {
-    // Remove exactCodeResult from the result if it exists
     result = result.filter(
       (airline: any) => airline.code !== exactCodeTypedResult.code,
     );
   }
 
-  // Check each result to ensure it has a logo
   result = result.filter((airline: any) => {
     if (airline.code) {
       const hasAirlineLogo = hasLogo(airline.code);
       if (hasAirlineLogo) {
-        return true; // Keep this airline in the results
+        return true;
       } else {
         console.warn(`No logo found for airline code: ${airline.code}`);
-        return false; // Exclude this airline from the results
+        return false;
       }
     }
   });
 
-  // Filter by icao if it doesnt have the right format
   result = result.filter((airline: any) => {
     const icaoRegex = /^[A-Z]{4}$/;
     return icaoRegex.test(airline.code);
   });
 
-  // Return only the first {searchLimit} results
   if (searchLimit > 0) {
-    // If the searchString is a perfect match for a code, return that result first
     if (exactCodeResult) {
       return [exactCodeResult, ...result].slice(0, searchLimit);
     }
@@ -131,6 +125,9 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
 
 function hasLogo(icao: string) {
   const logoPath = `./logos/${icao.toUpperCase()}.png`;
+  // Log full path for debugging
+  console.log(`Checking logo for ${icao}:`, logoPath);
+  console.log(Bun.file(logoPath).type);
   try {
     return Bun.file(logoPath).exists();
   } catch (error) {
