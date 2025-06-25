@@ -79,8 +79,8 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
 
   // Execute the query with the searchString parameter
   let result = query.all(`%${searchString}%`, `%${searchString}%`);
-  // Check if the searchString is a perfect match for a code
-  const exactCodeResult = exactCodeQuery.get(searchString);
+  // Check if the searchString is a perfect match for a code (put it in caps if it isn't already)
+  const exactCodeResult = exactCodeQuery.get(searchString.toUpperCase());
   const exactCodeTypedResult = exactCodeResult as AirlineResult | undefined;
 
   // Define the struct for a db result
