@@ -71,11 +71,23 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
     ORDER BY name ASC
   `);
 
+  // Make another one to check if a code perfectly matches
+  const exactCodeQuery = db.query(`
+    SELECT * FROM airline
+    WHERE code = ?
+  `);
+
   // Execute the query with the searchString parameter
   const result = query.all(`%${searchString}%`, `%${searchString}%`);
+  // Check if the searchString is a perfect match for a code
+  const exactCodeResult = exactCodeQuery.get(searchString);
 
   // Return only the first {searchLimit} results
   if (searchLimit > 0) {
+    // If the searchString is a perfect match for a code, return that result first
+    if (exactCodeResult) {
+      return [exactCodeResult, ...result].slice(0, searchLimit);
+    }
     return result.slice(0, searchLimit);
   } else {
     return result;
