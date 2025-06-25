@@ -37,6 +37,15 @@ function registerUserRoutes(router: Router) {
       }: { email: string; password: string; full_name: string } =
         await req.json();
 
+      console.log(
+        "Trying to create user with email:",
+        email,
+        "and full name:",
+        full_name,
+        "and password:",
+        password,
+      );
+
       if (!email || !password) {
         return new Response(
           JSON.stringify({ error: "Email and password are required" }),
@@ -60,6 +69,16 @@ function registerUserRoutes(router: Router) {
       }
 
       let sanitizedPassword = sanitizePassword(password);
+      if (sanitizePassword === null) {
+        return new Response(
+          JSON.stringify({ error: "Your password isn't valid" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+
       console.log("Sanitized password:", sanitizedPassword);
 
       // Check if email is already registered
