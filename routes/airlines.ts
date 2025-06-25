@@ -97,14 +97,12 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
   }
 
   result = result.filter((airline: any) => {
-    if (airline.code) {
-      const hasAirlineLogo = hasLogo(airline.code);
-      if (hasAirlineLogo) {
-        return true;
-      } else {
-        console.warn(`No logo found for airline code: ${airline.code}`);
-        return false;
-      }
+    const hasAirlineLogo = hasLogo(airline.code);
+    if (hasAirlineLogo) {
+      return true;
+    } else {
+      console.warn(`No logo found for airline code: ${airline.code}`);
+      return false;
     }
   });
 
@@ -125,7 +123,6 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
 
 function hasLogo(icao: string) {
   const logoPath = `./logos/${icao.toUpperCase()}.png`;
-  // Log full path for debugging
   console.log(`Checking logo for ${icao}:`, logoPath);
   console.log(Bun.file(logoPath).type);
   try {
