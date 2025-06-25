@@ -15,20 +15,9 @@ export function sanitizePassword(password: string): string | null {
     return null;
   }
 
-  const hasUpperCase = /[A-Z]/.test(cleaned);
-  const hasLowerCase = /[a-z]/.test(cleaned);
-  const hasDigit = /[0-9]/.test(cleaned);
-  const hasSymbol = /[!@#$%^&*()_\-+={[}\]|:;"'<>,.?/~`]/.test(cleaned);
-
   const hasIllegalWhitespace = /\s/.test(cleaned);
 
-  if (
-    !hasUpperCase ||
-    !hasLowerCase ||
-    !hasDigit ||
-    !hasSymbol ||
-    hasIllegalWhitespace
-  ) {
+  if (hasIllegalWhitespace) {
     return null;
   }
 
