@@ -98,6 +98,25 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
     );
   }
 
+  // Check each result to ensure it has a logo
+  result = result.filter((airline: any) => {
+    if (airline.code) {
+      const hasAirlineLogo = hasLogo(airline.code);
+      if (hasAirlineLogo) {
+        return true; // Keep this airline in the results
+      } else {
+        console.warn(`No logo found for airline code: ${airline.code}`);
+        return false; // Exclude this airline from the results
+      }
+    }
+  });
+
+  // Filter by icao if it doesnt have the right format
+  result = result.filter((airline: any) => {
+    const icaoRegex = /^[A-Z]{4}$/;
+    return icaoRegex.test(airline.code);
+  });
+
   // Return only the first {searchLimit} results
   if (searchLimit > 0) {
     // If the searchString is a perfect match for a code, return that result first
@@ -107,5 +126,15 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
     return result.slice(0, searchLimit);
   } else {
     return result;
+  }
+}
+
+function hasLogo(icao: string) {
+  const logoPath = `./logos/${icao.toLowerCase()}.png`;
+  try {
+    return Bun.file(logoPath).exists();
+  } catch (error) {
+    console.error(`Error checking logo for ${icao}:`, error);
+    return false;
   }
 }
