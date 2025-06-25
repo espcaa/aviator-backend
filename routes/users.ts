@@ -70,6 +70,7 @@ function registerUserRoutes(router: Router) {
 
       let sanitizedPassword = sanitizePassword(password);
       if (sanitizePassword === null) {
+        console.log("Password sanitization failed");
         return new Response(
           JSON.stringify({ error: "Your password isn't valid" }),
           {
