@@ -130,7 +130,7 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
 }
 
 function hasLogo(icao: string) {
-  const logoPath = `./logos/${icao.toLowerCase()}.png`;
+  const logoPath = `../logos/${icao.toLowerCase()}.png`;
   try {
     return Bun.file(logoPath).exists();
   } catch (error) {
