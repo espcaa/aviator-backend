@@ -7,6 +7,9 @@ if (!JWT_SECRET) {
   throw new Error("JWT_SECRET is not defined");
 }
 const jwtSecret = JWT_SECRET as string;
+const validLogos = new Set(
+  Bun.fs.readdirSync("./logos").map((file: any) => file.replace(".png", "")),
+);
 
 export function registerAirlinesRoutes(router: Router) {
   router.post("/api/airlines/getAirlines", async (req: Request) => {
@@ -97,13 +100,7 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
   }
 
   result = result.filter((airline: any) => {
-    const hasAirlineLogo = hasLogo(airline.code);
-    if (hasAirlineLogo) {
-      return true;
-    } else {
-      console.warn(`No logo found for airline code: ${airline.code}`);
-      return false;
-    }
+    return hasLogo(airline.code) || airline.code === exactCodeTypedResult?.code;
   });
 
   if (searchLimit > 0) {
@@ -117,13 +114,5 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
 }
 
 function hasLogo(icao: string) {
-  const logoPath = `./logos/${icao.toUpperCase()}.png`;
-  console.log(`Checking logo for ${icao}:`, logoPath);
-  console.log(Bun.file(logoPath).type);
-  try {
-    return Bun.file(logoPath).exists();
-  } catch (error) {
-    console.error(`Error checking logo for ${icao}:`, error);
-    return false;
-  }
+  return validLogos.has(icao.toUpperCase());
 }
