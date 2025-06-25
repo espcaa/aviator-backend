@@ -78,9 +78,26 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
   `);
 
   // Execute the query with the searchString parameter
-  const result = query.all(`%${searchString}%`, `%${searchString}%`);
+  let result = query.all(`%${searchString}%`, `%${searchString}%`);
   // Check if the searchString is a perfect match for a code
   const exactCodeResult = exactCodeQuery.get(searchString);
+  const exactCodeTypedResult = exactCodeResult as AirlineResult | undefined;
+
+  // Define the struct for a db result
+  type AirlineResult = {
+    id: number;
+    name: string;
+    code: string;
+    country: string;
+  };
+
+
+  if (exactCodeTypedResult) {
+    // Remove exactCodeResult from the result if it exists
+    result = result.filter(
+      (airline:any) => airline.code !== exactCodeTypedResult.code
+    );
+
 
   // Return only the first {searchLimit} results
   if (searchLimit > 0) {
