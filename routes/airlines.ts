@@ -6,10 +6,20 @@ const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET is not defined");
 }
+import { readdir } from "node:fs/promises";
 const jwtSecret = JWT_SECRET as string;
-const validLogos = new Set(
-  Bun.fs.readdirSync("./logos").map((file: any) => file.replace(".png", "")),
-);
+let validLogos = new Set<string>();
+readdir("./logos")
+  .then((files) => {
+    validLogos = new Set(
+      files.map((file) => file.replace(".png", "").toUpperCase()),
+    );
+  })
+  .catch((error) => {
+    console.error("Error reading logos directory:", error);
+  });
+
+const db = new Database("airlines.db");
 
 export function registerAirlinesRoutes(router: Router) {
   router.post("/api/airlines/getAirlines", async (req: Request) => {
@@ -31,7 +41,7 @@ export function registerAirlinesRoutes(router: Router) {
         };
         if (!payload.session) {
           return new Response(
-            JSON.stringify({ error: "Invalid session token" }),
+            JSON.stringify({ error: "Session token is invalid or expired" }),
             { status: 401, headers: { "Content-Type": "application/json" } },
           );
         }
@@ -45,7 +55,6 @@ export function registerAirlinesRoutes(router: Router) {
         );
       }
 
-      // Fetch airlines data from the database or external API
       const airlinesData = await fetchAirlinesData(searchString, searchlimit);
 
       return new Response(JSON.stringify({ airlines: airlinesData }), {
@@ -62,11 +71,7 @@ export function registerAirlinesRoutes(router: Router) {
   });
 }
 
-// Fetch data from sqlite airlines.db
-
 async function fetchAirlinesData(searchString: string, searchLimit: number) {
-  const db = new Database("airlines.db");
-
   // Prepare the query with placeholders for parameters
   const query = db.query(`
     SELECT * FROM airline
@@ -84,14 +89,13 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
   let result = query.all(`%${searchString}%`, `%${searchString}%`);
   // Check if the searchString is a perfect match for a code (put it in caps if it isn't already)
   const exactCodeResult = exactCodeQuery.get(searchString.toUpperCase());
-  const exactCodeTypedResult = exactCodeResult as AirlineResult | undefined;
-
   type AirlineResult = {
     id: number;
     name: string;
     code: string;
     country: string;
   };
+  const exactCodeTypedResult = exactCodeResult as AirlineResult | undefined;
 
   if (exactCodeTypedResult) {
     result = result.filter(
