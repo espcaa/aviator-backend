@@ -91,13 +91,12 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
     country: string;
   };
 
-
   if (exactCodeTypedResult) {
     // Remove exactCodeResult from the result if it exists
     result = result.filter(
-      (airline:any) => airline.code !== exactCodeTypedResult.code
+      (airline: any) => airline.code !== exactCodeTypedResult.code,
     );
-
+  }
 
   // Return only the first {searchLimit} results
   if (searchLimit > 0) {
