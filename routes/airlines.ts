@@ -109,7 +109,8 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
       result = result.filter(
         (airline: any) => airline.code !== exactCodeTypedResult.code,
       );
-      result.push(exactCodeTypedResult);
+      // Push the result as first element
+      result.unshift(exactCodeTypedResult);
     }
   }
 
