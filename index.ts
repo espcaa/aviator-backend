@@ -15,6 +15,7 @@ registerSessionRoutes(router);
 registerMapRoutes(router);
 registerAirlinesRoutes(router);
 registerLogoRoute(router);
+registerAirlinesRoutes(router);
 
 // Health check route
 router.get("/api/health", () => {
