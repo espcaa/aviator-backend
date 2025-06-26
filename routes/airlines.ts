@@ -103,12 +103,13 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
     );
   }
 
+  // Only keep airlines that either have a logo or are the exact match we're looking for
   result = result.filter((airline: any) => {
-    return hasLogo(airline.code) || airline.code === exactCodeTypedResult?.code;
+    return hasLogo(airline.code);
   });
 
   if (searchLimit > 0) {
-    if (exactCodeResult) {
+    if (exactCodeResult && hasLogo(exactCodeTypedResult.code)) {
       return [exactCodeResult, ...result].slice(0, searchLimit);
     }
     return result.slice(0, searchLimit);
@@ -118,5 +119,8 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
 }
 
 function hasLogo(icao: string) {
+  if (icao == undefined || icao === null) {
+    return false;
+  }
   return validLogos.has(icao.toUpperCase());
 }
