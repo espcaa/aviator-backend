@@ -9,7 +9,7 @@ import type { Router } from "../router";
 
 const db = new Database("airports.db");
 
-function registerAirportsRoutes(router: Router) {
+export function registerAirportsRoutes(router: Router) {
   router.post("/api/airports/getAirports", async (req: Request) => {
     try {
       const { sessionToken, searchString, searchlimit } = await req.json();
