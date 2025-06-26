@@ -96,6 +96,7 @@ async function fetchAirlinesData(searchString: string, searchLimit: number) {
     country: string;
   };
   const exactCodeTypedResult = exactCodeResult as AirlineResult | undefined;
+  console.log("Exact code result:", exactCodeTypedResult?.code);
 
   // Only keep airlines that either have a logo or are the exact match we're looking for
   result = result.filter((airline: any) => {
