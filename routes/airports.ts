@@ -63,7 +63,7 @@ export function registerAirportsRoutes(router: Router) {
 function fetchAirportsData(searchString: string, searchLimit: number) {
   const query = db.query(`
   SELECT * FROM airport
-  WHERE name LIKE ? OR code LIKE ?
+  WHERE name LIKE ? OR iata LIKE ?
   ORDER BY name ASC
 `);
 
@@ -77,21 +77,21 @@ function fetchAirportsData(searchString: string, searchLimit: number) {
   let result = query.all(`%${searchString}%`, `%${searchString}%`);
   // Check if the searchString is a perfect match for a code (put it in caps if it isn't already)
   const exactCodeResult = exactCodeQuery.get(searchString.toUpperCase());
-  type AirlineResult = {
+  type AirportResult = {
     id: number;
     name: string;
-    code: string;
+    iata: string;
     country: string;
   };
-  const exactCodeTypedResult = exactCodeResult as AirlineResult | undefined;
-  console.log("Exact code result:", exactCodeTypedResult?.code);
+  const exactCodeTypedResult = exactCodeResult as AirportResult | undefined;
+  console.log("Exact code result:", exactCodeTypedResult?.iata);
 
   // Only keep airlines that either have a logo or are the exact match we're looking for
 
   if (exactCodeTypedResult) {
     // First remove this exactCodeTypedResult if it exists in the result
     result = result.filter(
-      (airline: any) => airline.code !== exactCodeTypedResult.code,
+      (airline: any) => airline.code !== exactCodeTypedResult.iata,
     );
     // Push the result as first element
     result.unshift(exactCodeTypedResult);
@@ -106,7 +106,7 @@ function fetchAirportsData(searchString: string, searchLimit: number) {
   return result.map((airline: any) => ({
     id: airline.id,
     name: airline.name,
-    code: airline.code,
+    code: airline.iata,
     country: airline.country,
   }));
 }
