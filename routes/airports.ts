@@ -70,7 +70,7 @@ function fetchAirportsData(searchString: string, searchLimit: number) {
   // Make another one to check if a code perfectly matches
   const exactCodeQuery = db.query(`
   SELECT * FROM airport
-  WHERE code = ?
+  WHERE iata = ?
 `);
 
   // Execute the query with the searchString parameter
