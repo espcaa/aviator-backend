@@ -12,7 +12,6 @@ if (!JWT_SECRET) {
 const jwtSecret = JWT_SECRET as string;
 
 export function registerSessionRoutes(router: Router) {
-  // Session creation route
   router.post("/api/sessions/getRefreshToken", async (req: Request) => {
     try {
       const { email, password }: { email: string; password: string } =
@@ -20,12 +19,14 @@ export function registerSessionRoutes(router: Router) {
 
       if (!email || !password) {
         return new Response(
-          JSON.stringify({ error: "Email and password are required" }),
+          JSON.stringify({
+            message: "Email and password are required",
+            token: null,
+          }),
           { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
 
-      // Fetch user from database
       const { data: user, error: userError } = await supabase
         .from("users")
         .select("id, email, password_hash")
@@ -34,34 +35,25 @@ export function registerSessionRoutes(router: Router) {
       if (userError || !user) {
         console.error("User not found or error fetching user:", userError);
         return new Response(
-          JSON.stringify({ error: "Invalid email or password" }),
+          JSON.stringify({ message: "Invalid email or password", token: null }),
           { status: 401, headers: { "Content-Type": "application/json" } },
         );
       }
-      // Verify password
       const isPasswordValid = await bcrypt.compare(
         sanitizePassword(password) as string,
         user.password_hash,
       );
       if (!isPasswordValid) {
-        console.error("Invalid password for user:", email);
-        console.error("User data:", user);
-        console.error("Password hash:", user.password_hash);
-        console.error("Provided password:", password);
-        console.error("Password verification failed");
         return new Response(
-          JSON.stringify({ error: "Invalid email or password" }),
+          JSON.stringify({ message: "Invalid email or password", token: null }),
           { status: 401, headers: { "Content-Type": "application/json" } },
         );
       }
-
-      // Generate a jwt token
 
       const token = jwt.sign(
         { userId: user.id, email: user.email, refresher: true },
         jwtSecret,
         {
-          // 1 month expiration
           expiresIn: "30d",
         },
       );
@@ -74,17 +66,15 @@ export function registerSessionRoutes(router: Router) {
       const message = err instanceof Error ? err.message : "Unknown error";
       return new Response(
         JSON.stringify({
-          error: "Internal server error",
-          details: message,
+          message: "Internal server error",
+          token: null,
         }),
         { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }
   });
-  // Login with a refresh token
   router.post("/api/sessions/login", async (req: Request) => {
     try {
-      // get the token from the authorization bearer
       const authHeader = req.headers.get("Authorization");
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return new Response(
@@ -99,7 +89,6 @@ export function registerSessionRoutes(router: Router) {
           { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
-      // Verify the refresh token with bcrypt
 
       let decoded;
       try {
