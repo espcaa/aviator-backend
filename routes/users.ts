@@ -27,7 +27,6 @@ async function verifyPassword(
 }
 
 function registerUserRoutes(router: Router) {
-  // User registration route
   router.post("/api/users/createUser", async (req: Request) => {
     try {
       const {
@@ -37,18 +36,9 @@ function registerUserRoutes(router: Router) {
       }: { email: string; password: string; full_name: string } =
         await req.json();
 
-      console.log(
-        "Trying to create user with email:",
-        email,
-        "and full name:",
-        full_name,
-        "and password:",
-        password,
-      );
-
       if (!email || !password) {
         return new Response(
-          JSON.stringify({ error: "Email and password are required" }),
+          JSON.stringify({ message: "Email and password are required" }),
           { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
@@ -56,14 +46,11 @@ function registerUserRoutes(router: Router) {
       let fixedfullname = full_name || "";
 
       if (!full_name && email) {
-        // Generate it with the email
         //@ts-ignore
         const nameParts = email.split("@")[0].split(".");
         if (nameParts.length > 1) {
-          // Join the parts with a space
           fixedfullname = nameParts.join(" ");
         } else {
-          // Use the email prefix as the full name
           fixedfullname = nameParts[0] as string;
         }
       }
@@ -72,7 +59,7 @@ function registerUserRoutes(router: Router) {
       if (sanitizePassword === null) {
         console.log("Password sanitization failed");
         return new Response(
-          JSON.stringify({ error: "Your password isn't valid" }),
+          JSON.stringify({ message: "Your password isn't valid" }),
           {
             status: 400,
             headers: { "Content-Type": "application/json" },
@@ -82,7 +69,6 @@ function registerUserRoutes(router: Router) {
 
       console.log("Sanitized password:", sanitizedPassword);
 
-      // Check if email is already registered
       const { data: existingUsers, error: fetchError } = await supabase
         .from("users")
         .select("email")
@@ -91,28 +77,24 @@ function registerUserRoutes(router: Router) {
       if (fetchError) {
         return new Response(
           JSON.stringify({
-            error: "Failed to check existing users",
-            details: fetchError.message,
+            message: "Failed to check existing users",
           }),
           { status: 500, headers: { "Content-Type": "application/json" } },
         );
       }
       if (existingUsers && existingUsers.length > 0) {
         return new Response(
-          JSON.stringify({ error: "Email already registered" }),
+          JSON.stringify({ message: "Email already registered" }),
           { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
-      // Remove any strange characters from the password like leading/trailing spaces
       let sanpassword = password.trim();
       if (!sanpassword || sanpassword.length < 8) {
         return new Response(
-          JSON.stringify({ error: "Password must be at least 8 characters" }),
+          JSON.stringify({ message: "Password must be at least 8 characters" }),
           { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
-
-      // Hash the password
 
       const hashedPassword = await hashPassword(sanitizedPassword as string);
 
@@ -127,8 +109,7 @@ function registerUserRoutes(router: Router) {
       if (error) {
         return new Response(
           JSON.stringify({
-            error: "Failed to create user",
-            details: error.message,
+            message: "Failed to create user",
           }),
           { status: 500, headers: { "Content-Type": "application/json" } },
         );
@@ -150,68 +131,31 @@ function registerUserRoutes(router: Router) {
     }
   });
 
-  router.get("/api/users/checkEmail", async (req: Request) => {
-    const url = new URL(req.url);
-    const email = url.searchParams.get("email");
-    const ip = req.headers.get("x-forwarded-for") || "unknown";
-    console.log("IP address:", ip);
-    console.log("Email to check:", email);
-
-    if (!email) {
-      return new Response(JSON.stringify({ error: "Email is required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    const { data, error } = await supabase
-      .from("users")
-      .select("id")
-      .eq("email", email)
-      .limit(1);
-
-    if (error) {
-      return new Response(
-        JSON.stringify({ error: "Database error", details: error.message }),
-        { status: 500, headers: { "Content-Type": "application/json" } },
-      );
-    }
-
-    const available = !data || data.length === 0;
-    console.log("Email availability:", available);
-
-    return new Response(JSON.stringify({ available }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  });
   router.post("/api/users/getUserInfo", async (req: Request) => {
     try {
       const { token }: { token: string } = await req.json();
 
       if (!token) {
         return new Response(
-          JSON.stringify({ error: "Email and token are required" }),
+          JSON.stringify({ message: "Email and token are required" }),
           { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
 
-      // Verify the JWT token is a session one
       let email = "";
 
       try {
         const decoded = jwt.verify(token, jwtSecret);
         if (!decoded || typeof decoded !== "object" || !decoded.userId) {
-          return new Response(JSON.stringify({ error: "Invalid token" }), {
+          return new Response(JSON.stringify({ message: "Invalid token" }), {
             status: 401,
             headers: { "Content-Type": "application/json" },
           });
         } else {
-          // Set email from the decoded token
           email = decoded.email as string;
           if (!email) {
             return new Response(
-              JSON.stringify({ error: "Email not found in token" }),
+              JSON.stringify({ message: "Email not found in token" }),
               { status: 401, headers: { "Content-Type": "application/json" } },
             );
           }
@@ -219,7 +163,7 @@ function registerUserRoutes(router: Router) {
       } catch (err) {
         const errstring = err instanceof Error ? err.message : "Unknown error";
         return new Response(
-          JSON.stringify({ error: "Invalid token", errstring }),
+          JSON.stringify({ message: "Invalid token", errstring }),
           { status: 401, headers: { "Content-Type": "application/json" } },
         );
       }
@@ -233,8 +177,7 @@ function registerUserRoutes(router: Router) {
       if (error) {
         return new Response(
           JSON.stringify({
-            error: "Failed to fetch user info",
-            details: error.message,
+            message: "Failed to fetch user info",
           }),
           { status: 500, headers: { "Content-Type": "application/json" } },
         );
@@ -254,7 +197,7 @@ function registerUserRoutes(router: Router) {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       return new Response(
-        JSON.stringify({ error: "Internal server error", details: message }),
+        JSON.stringify({ message: "Internal server error" }),
         { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }
