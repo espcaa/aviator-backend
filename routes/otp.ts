@@ -16,7 +16,7 @@ function generateOTP(length: number = 4): string {
   return otp;
 }
 
-async function saveOtpToNocoDB(email: string, otp: string) {
+async function saveOtpToSupabase(email: string, otp: string) {
   try {
     const { data, error } = await supabase
       .from("otp")
@@ -32,9 +32,8 @@ export function registerOtpRoutes(router: Router) {
     try {
       const { email } = await req.json();
       const otp = generateOTP();
-      // Add it to nocodb
 
-      await saveOtpToNocoDB(email, otp);
+      await saveOtpToSupabase(email, otp);
 
       const html = getEmailHtml({ otp: otp }, "email_templates/otp.html");
 
@@ -77,7 +76,6 @@ export function registerOtpRoutes(router: Router) {
         });
       }
 
-      // verify otp provided and the one in the database match
       console.log("Expected otp: " + String(data[0].otp));
       console.log("Provided otp: " + String(otp));
 

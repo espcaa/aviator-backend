@@ -33,13 +33,53 @@ function registerUserRoutes(router: Router) {
         email,
         password,
         full_name,
-      }: { email: string; password: string; full_name: string } =
+        otp,
+      }: { email: string; password: string; full_name: string; otp: string } =
         await req.json();
 
       if (!email || !password) {
+        return new Response(JSON.stringify({ message: "Missing fields" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      const { data, error } = await supabase
+        .from("otp")
+        .select("*")
+        .eq("email", email)
+        .order("created_at", { ascending: false });
+
+      if (error || !data) {
+        return new Response(JSON.stringify({ message: "Invalid OTP" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      console.log("Expected otp: " + String(data[0].otp));
+      console.log("Provided otp: " + String(otp));
+
+      if (String(data[0].otp) !== String(otp)) {
+        return new Response(JSON.stringify({ message: "Invalid OTP" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      const { error: deleteError } = await supabase
+        .from("otp")
+        .delete()
+        .eq("email", email)
+        .eq("otp", otp);
+
+      if (deleteError) {
         return new Response(
-          JSON.stringify({ message: "Email and password are required" }),
-          { status: 400, headers: { "Content-Type": "application/json" } },
+          JSON.stringify({ message: "Failed to delete OTP" }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          },
         );
       }
 
@@ -123,8 +163,7 @@ function registerUserRoutes(router: Router) {
       const message = err instanceof Error ? err.message : "Unknown error";
       return new Response(
         JSON.stringify({
-          error: "Internal server error",
-          details: message,
+          message: "Internal server error",
         }),
         { status: 500, headers: { "Content-Type": "application/json" } },
       );
