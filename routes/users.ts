@@ -138,7 +138,7 @@ function registerUserRoutes(router: Router) {
 
       const hashedPassword = await hashPassword(sanitizedPassword as string);
 
-      const { error } = await supabase.from("users").insert([
+      const { error: insertError } = await supabase.from("users").insert([
         {
           email,
           password_hash: hashedPassword,
@@ -146,7 +146,7 @@ function registerUserRoutes(router: Router) {
         },
       ]);
 
-      if (error) {
+      if (insertError) {
         return new Response(
           JSON.stringify({
             message: "Failed to create user",
