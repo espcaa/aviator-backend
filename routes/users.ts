@@ -27,6 +27,49 @@ async function verifyPassword(
 }
 
 function registerUserRoutes(router: Router) {
+  router.post("/api/users/checkEmail", async (req: Request) => {
+    try {
+      const { email }: { email: string } = await req.json();
+      if (!email) {
+        return new Response(JSON.stringify({ message: "Email is required" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      const { data, error } = await supabase
+        .from("users")
+        .select("email")
+        .eq("email", email)
+        .single();
+
+      if (error) {
+        return new Response(
+          JSON.stringify({ message: "Error checking email" }),
+          { status: 500, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      if (data) {
+        return new Response(JSON.stringify({ exists: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      } else {
+        return new Response(JSON.stringify({ exists: false }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      return new Response(
+        JSON.stringify({ message: "Internal server error" }),
+        { status: 500, headers: { "Content-Type": "application/json" } },
+      );
+    }
+  });
+
   router.post("/api/users/createUser", async (req: Request) => {
     try {
       const {
