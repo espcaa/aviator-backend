@@ -198,10 +198,10 @@ function registerUserRoutes(router: Router) {
         );
       }
 
-      return new Response(
-        JSON.stringify({ message: "User created successfully" }),
-        { status: 200, headers: { "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ message: "success" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       return new Response(
