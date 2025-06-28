@@ -44,13 +44,10 @@ export function registerOtpRoutes(router: Router) {
         html,
       );
 
-      return new Response(
-        JSON.stringify({ message: "OTP generated successfully" }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        },
-      );
+      return new Response(JSON.stringify({ message: "success" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
     } catch (error) {
       console.error("Error generating OTP:", error);
       return new Response(JSON.stringify({ error: "Invalid request" }), {
