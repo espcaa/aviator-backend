@@ -166,7 +166,6 @@ function registerFlightRoutes(router: Router) {
           headers: { "Content-Type": "application/json" },
         },
       );
-
     } catch (error) {
       return new Response(
         JSON.stringify({ message: "Internal server error", success: false }),
@@ -176,7 +175,79 @@ function registerFlightRoutes(router: Router) {
         },
       );
     }
-  }
+  });
+  router.post("/api/flights/deleteFlight", async (req: Request) => {
+    try {
+      const { sessionToken, flightId } = await req.json();
+      if (!sessionToken) {
+        return new Response(
+          JSON.stringify({ message: "Session token is required" }),
+          { status: 400, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      let payload;
+      try {
+        payload = jwt.verify(sessionToken, jwtSecret) as {
+          userId: string;
+          email: string;
+          session: boolean;
+        };
+        if (!payload.session) {
+          return new Response(
+            JSON.stringify({
+              message: "Invalid session token",
+              success: false,
+            }),
+            { status: 401, headers: { "Content-Type": "application/json" } },
+          );
+        }
+      } catch (error) {
+        console.error("Invalid session token:", error);
+        return new Response(
+          JSON.stringify({
+            message: "Invalid session token",
+            success: false,
+          }),
+          { status: 401, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      // Delete the flight from the supabase
+      const { error } = await supabase
+        .from("flights")
+        .delete()
+        .eq("id", flightId)
+        .eq("user_id", payload.userId);
+      if (error) {
+        console.error("Error deleting flight:", error);
+        return new Response(
+          JSON.stringify({ message: "Error deleting flight", success: false }),
+          { status: 500, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      return new Response(
+        JSON.stringify({
+          message: "Flight deleted successfully",
+          success: true,
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    } catch (error) {
+      console.error("Error in deleteFlight route:", error);
+      return new Response(
+        JSON.stringify({ message: "Internal server error", success: false }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+  });
 }
 
 interface AirportCoordinates {

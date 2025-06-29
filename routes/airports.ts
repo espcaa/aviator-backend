@@ -58,6 +58,39 @@ export function registerAirportsRoutes(router: Router) {
       });
     }
   });
+  router.post("/api/airports/isCodeValid", async (req: Request) => {
+    try {
+      const { code }: { code: string } = await req.json();
+      if (!code) {
+        return new Response(
+          JSON.stringify({ message: "Code is required" }),
+          { status: 400, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      const airport = db
+        .query("SELECT * FROM airport WHERE iata = ?")
+        .get(code.toUpperCase());
+
+      if (airport) {
+        return new Response(JSON.stringify({ exists: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      } else {
+        return new Response(JSON.stringify({ exists: false }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      return new Response(
+        JSON.stringify({ message: "Internal server error" }),
+        { status: 500, headers: { "Content-Type": "application/json" } },
+      );
+    }
+  }
 }
 
 async function fetchAirportsData(searchString: string, searchLimit: number) {
