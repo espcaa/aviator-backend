@@ -12,7 +12,7 @@ if (!JWT_SECRET) {
 const jwtSecret = JWT_SECRET as string;
 
 export function registerSessionRoutes(router: Router) {
-  router.post("/api/shTokesessions/getRefren", async (req: Request) => {
+  router.post("/api/sessions/getRefreshToken", async (req: Request) => {
     try {
       const { email, password }: { email: string; password: string } =
         await req.json();
