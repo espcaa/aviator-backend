@@ -5,7 +5,20 @@ if (!JWT_SECRET) {
 }
 const jwtSecret = JWT_SECRET as string;
 import type { Router } from "../router";
+import { Database } from "bun:sqlite";
 import { supabase } from "../utils/database";
+
+type FlightAnswer = {
+  flightId: string;
+  departureCode: string;
+  arrivalCode: string;
+  departureDate: string;
+  duration: number;
+  departureAirportLat: number;
+  departureAirportLon: number;
+  arrivalAirportLat: number;
+  arrivalAirportLon: number;
+};
 
 function registerFlightRoutes(router: Router) {
   router.post("/api/flights/createFlight", async (req: Request) => {
@@ -75,6 +88,122 @@ function registerFlightRoutes(router: Router) {
           headers: { "Content-Type": "application/json" },
         },
       );
+    }
+  });
+  router.post("/api/flights/getFlights", async (req: Request) => {
+    try {
+      const { sessionToken } = await req.json();
+
+      // Get the user id from the session token
+      let payload;
+      try {
+        payload = jwt.verify(sessionToken, jwtSecret) as {
+          userId: string;
+          email: string;
+          session: boolean;
+        };
+        if (!payload.session) {
+          return new Response(
+            JSON.stringify({
+              message: "Invalid session token",
+              success: false,
+            }),
+            { status: 401, headers: { "Content-Type": "application/json" } },
+          );
+        }
+      } catch (error) {
+        console.error("Invalid session token:", error);
+        return new Response(
+          JSON.stringify({
+            message: "Invalid session token",
+            success: false,
+          }),
+          { status: 401, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      // Fetch flights from the supabase
+      const { data: flights, error } = await supabase
+        .from("flights")
+        .select("*")
+        .eq("user_id", payload.userId);
+      if (error) {
+        console.error("Error fetching flights:", error);
+        return new Response(
+          JSON.stringify({ message: "Error fetching flights", success: false }),
+          { status: 500, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      // Map the flights to the required format
+      const flightAnswers: FlightAnswer[] = await Promise.all(
+        flights.map(async (flight) => {
+          const departureCoords = await getAirportCoordinatesFromCode(
+            flight.departure_code,
+          );
+          const arrivalCoords = await getAirportCoordinatesFromCode(
+            flight.arrival_code,
+          );
+
+          return {
+            flightId: flight.id,
+            departureCode: flight.departure_code,
+            arrivalCode: flight.arrival_code,
+            departureDate: flight.date,
+            duration: flight.duration,
+            departureAirportLat: departureCoords.lat,
+            departureAirportLon: departureCoords.lon,
+            arrivalAirportLat: arrivalCoords.lat,
+            arrivalAirportLon: arrivalCoords.lon,
+          };
+        }),
+      );
+
+      return new Response(
+        JSON.stringify({ flights: flightAnswers, success: true }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+
+    } catch (error) {
+      return new Response(
+        JSON.stringify({ message: "Internal server error", success: false }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+  }
+}
+
+interface AirportCoordinates {
+  latitude: number;
+  longitude: number;
+}
+
+function getAirportCoordinatesFromCode(
+  airportCode: string,
+): Promise<{ lat: number; lon: number }> {
+  return new Promise((resolve, reject) => {
+    try {
+      const db = new Database("airports.db");
+      const row = db
+        .query<
+          AirportCoordinates,
+          [string]
+        >("SELECT latitude, longitude FROM airport WHERE iata_code = ?")
+        .get(airportCode);
+
+      if (!row) {
+        return reject(new Error(`Airport code ${airportCode} not found`));
+      }
+
+      resolve({ lat: row.latitude, lon: row.longitude });
+    } catch (error) {
+      reject(error);
     }
   });
 }

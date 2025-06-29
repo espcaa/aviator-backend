@@ -60,7 +60,7 @@ export function registerAirportsRoutes(router: Router) {
   });
 }
 
-function fetchAirportsData(searchString: string, searchLimit: number) {
+async function fetchAirportsData(searchString: string, searchLimit: number) {
   const query = db.query(`
   SELECT * FROM airport
   WHERE name LIKE ? OR iata LIKE ?
