@@ -57,6 +57,7 @@ export function registerSessionRoutes(router: Router) {
           expiresIn: "30d",
         },
       );
+      console.log("Generated refresh token for user:", token);
 
       return new Response(
         JSON.stringify({ message: "Login successful", token }),
@@ -87,6 +88,8 @@ export function registerSessionRoutes(router: Router) {
         );
       }
 
+      console.log("Received refresh token:", refreshToken);
+
       let decoded;
       try {
         decoded = jwt.verify(refreshToken, jwtSecret) as {
@@ -106,6 +109,10 @@ export function registerSessionRoutes(router: Router) {
         );
       }
       if (!decoded.refresher) {
+        console.error(
+          "Refresh token is not valid for session refresh",
+          decoded,
+        );
         return new Response(
           JSON.stringify({
             message: "Invalid refresh token",
