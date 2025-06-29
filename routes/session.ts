@@ -75,17 +75,14 @@ export function registerSessionRoutes(router: Router) {
   });
   router.post("/api/sessions/login", async (req: Request) => {
     try {
-      const authHeader = req.headers.get("Authorization");
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return new Response(
-          JSON.stringify({ error: "Authorization header is required" }),
-          { status: 401, headers: { "Content-Type": "application/json" } },
-        );
-      }
-      const refreshToken = authHeader.split(" ")[1];
+      const { refreshToken }: { refreshToken: string } = await req.json();
       if (!refreshToken) {
         return new Response(
-          JSON.stringify({ error: "Refresh token is required" }),
+          JSON.stringify({
+            message: "Refresh token is required",
+            token: null,
+            success: false,
+          }),
           { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
@@ -100,19 +97,25 @@ export function registerSessionRoutes(router: Router) {
       } catch (err) {
         console.error("Invalid refresh token:", err);
         return new Response(
-          JSON.stringify({ error: "Invalid refresh token" }),
+          JSON.stringify({
+            message: "Invalid refresh token",
+            token: null,
+            success: false,
+          }),
           { status: 401, headers: { "Content-Type": "application/json" } },
         );
       }
-      // Check if the token is a refresher
       if (!decoded.refresher) {
         return new Response(
-          JSON.stringify({ error: "Invalid refresh token" }),
+          JSON.stringify({
+            message: "Invalid refresh token",
+            token: null,
+            success: false,
+          }),
           { status: 401, headers: { "Content-Type": "application/json" } },
         );
       }
 
-      // Generate a new access token
       const accessToken = jwt.sign(
         { userId: decoded.userId, email: decoded.email, session: true },
         jwtSecret,
@@ -121,10 +124,17 @@ export function registerSessionRoutes(router: Router) {
         },
       );
 
-      return new Response(JSON.stringify({ token: accessToken }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          message: "Login successful",
+          token: accessToken,
+          success: true,
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       return new Response(
