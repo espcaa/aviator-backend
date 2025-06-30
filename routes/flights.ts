@@ -78,8 +78,8 @@ export function registerFlightRoutes(router: Router) {
 
       const { error } = await supabase.from("flights").insert({
         user_id: payload.userId,
-        departure_code: departureCode,
-        arrival_code: arrivalCode,
+        departure_airport_code: departureCode,
+        arrival_airport_code: arrivalCode,
         date: departureDate,
         duration: 0.0,
         airline: airlineCode,
