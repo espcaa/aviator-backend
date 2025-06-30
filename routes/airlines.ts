@@ -27,7 +27,7 @@ export function registerAirlinesRoutes(router: Router) {
       const { sessionToken, searchString, searchlimit } = await req.json();
       if (!sessionToken) {
         return new Response(
-          JSON.stringify({ error: "Session token is required" }),
+          JSON.stringify({ message: "Session token is required" }),
           { status: 400, headers: { "Content-Type": "application/json" } },
         );
       }
@@ -41,7 +41,7 @@ export function registerAirlinesRoutes(router: Router) {
         };
         if (!payload.session) {
           return new Response(
-            JSON.stringify({ error: "Session token is invalid or expired" }),
+            JSON.stringify({ message: "Session token is invalid or expired" }),
             { status: 401, headers: { "Content-Type": "application/json" } },
           );
         }
@@ -49,7 +49,7 @@ export function registerAirlinesRoutes(router: Router) {
         console.error("Invalid session token:", error);
         return new Response(
           JSON.stringify({
-            error: "Invalid session token aaa idk why random error",
+            message: "Invalid session token",
           }),
           { status: 401, headers: { "Content-Type": "application/json" } },
         );
@@ -57,10 +57,13 @@ export function registerAirlinesRoutes(router: Router) {
 
       const airlinesData = await fetchAirlinesData(searchString, searchlimit);
 
-      return new Response(JSON.stringify({ airlines: airlinesData }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ message: "success", airlines: airlinesData }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     } catch (error) {
       console.error("Server error:", error);
       return new Response(JSON.stringify({ error: "Server error" }), {

@@ -20,11 +20,16 @@ type FlightAnswer = {
   arrivalAirportLon: number;
 };
 
-function registerFlightRoutes(router: Router) {
+export function registerFlightRoutes(router: Router) {
   router.post("/api/flights/createFlight", async (req: Request) => {
     try {
-      const { sessionToken, departureCode, arrivalCode, departureDate } =
-        await req.json();
+      const {
+        sessionToken,
+        departureCode,
+        arrivalCode,
+        departureDate,
+        airlineCode,
+      } = await req.json();
       if (!sessionToken) {
         return new Response(
           JSON.stringify({ message: "Session token is required" }),
@@ -61,12 +66,23 @@ function registerFlightRoutes(router: Router) {
 
       // Create the flight in the supabase
 
+      if (airlineCode === "null") {
+        return new Response(
+          JSON.stringify({
+            message: "Airline is required",
+            success: false,
+          }),
+          { status: 400, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
       supabase.from("flights").insert({
         user_id: payload.userId,
         departure_code: departureCode,
         arrival_code: arrivalCode,
         date: departureDate,
         duration: 0.0,
+        airline: airlineCode,
       });
 
       return new Response(

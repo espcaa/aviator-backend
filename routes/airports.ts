@@ -62,10 +62,10 @@ export function registerAirportsRoutes(router: Router) {
     try {
       const { code }: { code: string } = await req.json();
       if (!code) {
-        return new Response(
-          JSON.stringify({ message: "Code is required" }),
-          { status: 400, headers: { "Content-Type": "application/json" } },
-        );
+        return new Response(JSON.stringify({ message: "Code is required" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
       const airport = db
@@ -90,7 +90,7 @@ export function registerAirportsRoutes(router: Router) {
         { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }
-  }
+  });
 }
 
 async function fetchAirportsData(searchString: string, searchLimit: number) {

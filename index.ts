@@ -8,6 +8,7 @@ import { registerMapRoutes } from "./routes/map";
 import { registerAirlinesRoutes } from "./routes/airlines";
 import { registerLogoRoute } from "./routes/logo";
 import { registerAirportsRoutes } from "./routes/airports";
+import { registerFlightRoutes } from "./routes/flights";
 // Create router instance
 const router = new Router();
 registerOtpRoutes(router);
@@ -18,6 +19,7 @@ registerAirlinesRoutes(router);
 registerLogoRoute(router);
 registerAirlinesRoutes(router);
 registerAirportsRoutes(router);
+registerFlightRoutes(router);
 
 // Health check route
 router.get("/api/health", () => {
