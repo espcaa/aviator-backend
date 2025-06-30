@@ -76,7 +76,7 @@ export function registerFlightRoutes(router: Router) {
         );
       }
 
-      await supabase.from("flights").insert({
+      const { error } = await supabase.from("flights").insert({
         user_id: payload.userId,
         departure_code: departureCode,
         arrival_code: arrivalCode,
@@ -84,6 +84,12 @@ export function registerFlightRoutes(router: Router) {
         duration: 0.0,
         airline: airlineCode,
       });
+
+      if (error) {
+        console.error("Error inserting flight into Supabase:", error);
+      } else {
+        console.log("Flight inserted successfully into Supabase.");
+      }
 
       return new Response(
         JSON.stringify({
