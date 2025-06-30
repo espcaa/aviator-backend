@@ -76,7 +76,7 @@ export function registerFlightRoutes(router: Router) {
         );
       }
 
-      supabase.from("flights").insert({
+      await supabase.from("flights").insert({
         user_id: payload.userId,
         departure_code: departureCode,
         arrival_code: arrivalCode,
