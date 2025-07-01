@@ -79,7 +79,11 @@ export function registerFlightRoutes(router: Router) {
         );
         return new Response(
           JSON.stringify({
-            message: resultDeparture.message || resultArrival.message,
+            message: {
+              departure: resultDeparture.exists
+                ? "Arrival airport code is invalid"
+                : "Departure airport code is invalid",
+            },
             success: false,
           }),
           { status: 400, headers: { "Content-Type": "application/json" } },
