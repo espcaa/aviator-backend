@@ -197,19 +197,20 @@ export function registerFlightRoutes(router: Router) {
         );
       }
 
-      // Map the flights to the required format
       const flightAnswers: FlightAnswer[] = await Promise.all(
         flights.map(async (flight) => {
           const departureCoords = await getGpsCoordinates(
-            flight.departure_code,
+            flight.departure_airport_code,
           );
-          const arrivalCoords = await getGpsCoordinates(flight.arrival_code);
+          const arrivalCoords = await getGpsCoordinates(
+            flight.arrival_airport_code,
+          );
 
           return {
             flightId: flight.id,
             airlineCode: flight.airline,
-            departureCode: flight.departure_code,
-            arrivalCode: flight.arrival_code,
+            departureCode: flight.departure_airport_code,
+            arrivalCode: flight.arrival_airport_code,
             departureDate: flight.date,
             duration: flight.duration,
             departureAirportLat: departureCoords.location?.latitude,
