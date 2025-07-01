@@ -135,6 +135,7 @@ export function registerFlightRoutes(router: Router) {
               lon: resultArrival.location?.longitude,
             },
           },
+          duration: 0.0,
         }),
         {
           status: 200,
