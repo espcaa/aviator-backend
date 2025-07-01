@@ -120,6 +120,27 @@ export function registerFlightRoutes(router: Router) {
       } else {
         console.log("Flight inserted successfully into Supabase.");
       }
+      // Get the flight id from the supabase
+
+      const { data: flightData, error: flightError } = await supabase
+        .from("flights")
+        .select("id")
+        .eq("user_id", payload.userId)
+        .eq("departure_airport_code", departureCode)
+        .eq("arrival_airport_code", arrivalCode)
+        .eq("date", departureDate)
+        .eq("airline", airlineCode)
+        .single();
+      if (flightError || !flightData) {
+        console.error("Error fetching flight id:", flightError);
+        return new Response(
+          JSON.stringify({
+            message: "Error fetching flight id",
+            success: false,
+          }),
+          { status: 500, headers: { "Content-Type": "application/json" } },
+        );
+      }
 
       return new Response(
         JSON.stringify({
@@ -136,6 +157,7 @@ export function registerFlightRoutes(router: Router) {
             },
           },
           duration: 0.0,
+          flightId: flightData.id,
         }),
         {
           status: 200,
