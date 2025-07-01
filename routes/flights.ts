@@ -7,6 +7,7 @@ const jwtSecret = JWT_SECRET as string;
 import type { Router } from "../router";
 import { Database } from "bun:sqlite";
 import { supabase } from "../utils/database";
+import { getGpsCoordinates } from "../utils/gps";
 
 type FlightAnswer = {
   flightId: string;
@@ -64,6 +65,21 @@ export function registerFlightRoutes(router: Router) {
         );
       }
 
+      // Get the airports coordinates from the database
+
+      let resultDeparture = await getGpsCoordinates(departureCode);
+      let resultArrival = await getGpsCoordinates(arrivalCode);
+
+      if (!resultDeparture.exists || !resultArrival.exists) {
+        return new Response(
+          JSON.stringify({
+            message: resultDeparture.message || resultArrival.message,
+            success: false,
+          }),
+          { status: 400, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
       // Create the flight in the supabase
 
       if (airlineCode === "null") {
@@ -83,6 +99,10 @@ export function registerFlightRoutes(router: Router) {
         date: departureDate,
         duration: 0.0,
         airline: airlineCode,
+        departure_airport_lon: resultDeparture.location?.longitude,
+        departure_airport_lat: resultDeparture.location?.latitude,
+        arrival_airport_lon: resultArrival.location?.longitude,
+        arrival_airport_lat: resultArrival.location?.latitude,
       });
 
       if (error) {
@@ -95,6 +115,16 @@ export function registerFlightRoutes(router: Router) {
         JSON.stringify({
           message: "Flight created successfully",
           success: true,
+          positions: {
+            departure: {
+              lat: resultDeparture.location?.latitude,
+              lon: resultDeparture.location?.longitude,
+            },
+            arrival: {
+              lat: resultArrival.location?.latitude,
+              lon: resultArrival.location?.longitude,
+            },
+          },
         }),
         {
           status: 200,
