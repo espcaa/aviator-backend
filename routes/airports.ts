@@ -12,7 +12,7 @@ const db = new Database("airports.db");
 export function registerAirportsRoutes(router: Router) {
   router.post("/api/airports/getAirports", async (req: Request) => {
     try {
-      const { sessionToken, searchString, searchlimit } = await req.json();
+      const { sessionToken, searchString, searchLimit } = await req.json();
       if (!sessionToken) {
         return new Response(
           JSON.stringify({ error: "Session token is required" }),
@@ -43,8 +43,8 @@ export function registerAirportsRoutes(router: Router) {
         );
       }
 
-      // Fetch airports data based on searchString and searchlimit
-      const airportsData = await fetchAirportsData(searchString, searchlimit);
+      // Fetch airports data based on searchString and searchLimit
+      const airportsData = await fetchAirportsData(searchString, searchLimit);
 
       return new Response(JSON.stringify({ airports: airportsData }), {
         status: 200,
@@ -165,7 +165,7 @@ async function fetchAirportsData(searchString: string, searchLimit: number) {
   if (exactCodeTypedResult) {
     // First remove this exactCodeTypedResult if it exists in the result
     result = result.filter(
-      (airline: any) => airline.code !== exactCodeTypedResult.iata,
+      (airport: any) => airport.iata !== exactCodeTypedResult.iata,
     );
     // Push the result as first element
     result.unshift(exactCodeTypedResult);
