@@ -230,6 +230,7 @@ export function registerFlightRoutes(router: Router) {
         },
       );
     } catch (error) {
+      console.log("Error in getFlights route:", error);
       return new Response(
         JSON.stringify({ message: "Internal server error", success: false }),
         {
