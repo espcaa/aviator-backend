@@ -200,12 +200,10 @@ export function registerFlightRoutes(router: Router) {
       // Map the flights to the required format
       const flightAnswers: FlightAnswer[] = await Promise.all(
         flights.map(async (flight) => {
-          const departureCoords = await getAirportCoordinatesFromCode(
+          const departureCoords = await getGpsCoordinates(
             flight.departure_code,
           );
-          const arrivalCoords = await getAirportCoordinatesFromCode(
-            flight.arrival_code,
-          );
+          const arrivalCoords = await getGpsCoordinates(flight.arrival_code);
 
           return {
             flightId: flight.id,
@@ -214,10 +212,10 @@ export function registerFlightRoutes(router: Router) {
             arrivalCode: flight.arrival_code,
             departureDate: flight.date,
             duration: flight.duration,
-            departureAirportLat: departureCoords.lat,
-            departureAirportLon: departureCoords.lon,
-            arrivalAirportLat: arrivalCoords.lat,
-            arrivalAirportLon: arrivalCoords.lon,
+            departureAirportLat: departureCoords.location?.latitude,
+            departureAirportLon: departureCoords.location?.longitude,
+            arrivalAirportLat: arrivalCoords.location?.latitude,
+            arrivalAirportLon: arrivalCoords.location?.longitude,
           };
         }),
       );
@@ -317,28 +315,4 @@ export function registerFlightRoutes(router: Router) {
 interface AirportCoordinates {
   latitude: number;
   longitude: number;
-}
-
-function getAirportCoordinatesFromCode(
-  airportCode: string,
-): Promise<{ lat: number; lon: number }> {
-  return new Promise((resolve, reject) => {
-    try {
-      const db = new Database("airports.db");
-      const row = db
-        .query<
-          AirportCoordinates,
-          [string]
-        >("SELECT latitude, longitude FROM airport WHERE iata_code = ?")
-        .get(airportCode);
-
-      if (!row) {
-        return reject(new Error(`Airport code ${airportCode} not found`));
-      }
-
-      resolve({ lat: row.latitude, lon: row.longitude });
-    } catch (error) {
-      reject(error);
-    }
-  });
 }
