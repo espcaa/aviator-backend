@@ -209,6 +209,7 @@ export function registerFlightRoutes(router: Router) {
 
           return {
             flightId: flight.id,
+            airlineCode: flight.airline,
             departureCode: flight.departure_code,
             arrivalCode: flight.arrival_code,
             departureDate: flight.date,
