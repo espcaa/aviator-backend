@@ -24,7 +24,7 @@ const db = new Database("airlines.db");
 export function registerAirlinesRoutes(router: Router) {
   router.post("/api/airlines/getAirlines", async (req: Request) => {
     try {
-      const { sessionToken, searchString, searchlimit } = await req.json();
+      const { sessionToken, searchString, searchLimit } = await req.json();
       if (!sessionToken) {
         return new Response(
           JSON.stringify({ message: "Session token is required" }),
@@ -55,7 +55,7 @@ export function registerAirlinesRoutes(router: Router) {
         );
       }
 
-      const airlinesData = await fetchAirlinesData(searchString, searchlimit);
+      const airlinesData = await fetchAirlinesData(searchString, searchLimit);
 
       return new Response(
         JSON.stringify({ message: "success", airlines: airlinesData }),

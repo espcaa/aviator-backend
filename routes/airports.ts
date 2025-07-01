@@ -162,8 +162,6 @@ async function fetchAirportsData(searchString: string, searchLimit: number) {
   const exactCodeTypedResult = exactCodeResult as AirportResult | undefined;
   console.log("Exact code result:", exactCodeTypedResult?.iata);
 
-  // Only keep airlines that either have a logo or are the exact match we're looking for
-
   if (exactCodeTypedResult) {
     // First remove this exactCodeTypedResult if it exists in the result
     result = result.filter(
@@ -173,16 +171,14 @@ async function fetchAirportsData(searchString: string, searchLimit: number) {
     result.unshift(exactCodeTypedResult);
   }
 
-  // Limit the results if searchLimit is provided
   if (searchLimit && searchLimit > 0) {
     result = result.slice(0, searchLimit);
   }
 
-  // Map the results to a more structured format
-  return result.map((airline: any) => ({
-    id: airline.id,
-    name: airline.name,
-    code: airline.iata,
-    country: airline.country,
+  return result.map((airport: any) => ({
+    id: airport.id,
+    name: airport.name,
+    code: airport.iata,
+    country: airport.country,
   }));
 }
