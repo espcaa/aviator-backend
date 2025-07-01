@@ -1,20 +1,28 @@
-// get an airport gps coords by its iata code
-
 import { Database } from "bun:sqlite";
 
 const db = new Database("airports.db");
 
 export async function getGpsCoordinates(iata: string) {
-  const airport: any = db
-    .query("SELECT * FROM airport WHERE iata = ?")
-    .get(iata.toUpperCase());
+  try {
+    if (!iata || iata.length !== 3) {
+      console.error("Invalid IATA code:", iata);
+      return {
+        exists: false,
+        message: "Invalid IATA code",
+      };
+    }
 
-  if (!airport) {
-    return {
-      exists: false,
-      message: "Airport not found",
-    };
-  } else {
+    const airport: any = db
+      .query("SELECT * FROM airport WHERE iata = ?")
+      .get(iata.toUpperCase());
+
+    if (!airport) {
+      return {
+        exists: false,
+        message: "Airport not found",
+      };
+    }
+
     return {
       exists: true,
       location: {
@@ -22,6 +30,11 @@ export async function getGpsCoordinates(iata: string) {
         longitude: airport.lon,
       },
       message: "Airport found",
+    };
+  } catch (error: any) {
+    return {
+      exists: false,
+      message: `Error retrieving airport: ${error.message}`,
     };
   }
 }

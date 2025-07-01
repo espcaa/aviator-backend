@@ -32,6 +32,7 @@ export function registerFlightRoutes(router: Router) {
         airlineCode,
       } = await req.json();
       if (!sessionToken) {
+        console.log("Session token is required");
         return new Response(
           JSON.stringify({ message: "Session token is required" }),
           { status: 400, headers: { "Content-Type": "application/json" } },
@@ -71,6 +72,11 @@ export function registerFlightRoutes(router: Router) {
       let resultArrival = await getGpsCoordinates(arrivalCode);
 
       if (!resultDeparture.exists || !resultArrival.exists) {
+        console.error(
+          "One or both airport codes are invalid:",
+          departureCode,
+          arrivalCode,
+        );
         return new Response(
           JSON.stringify({
             message: resultDeparture.message || resultArrival.message,
