@@ -3,6 +3,7 @@ import { Database } from "bun:sqlite";
 const db = new Database("airports.db");
 
 export async function getGpsCoordinates(iata: string) {
+  iata = iata.trim().toUpperCase();
   try {
     if (!iata || iata.length !== 3) {
       console.error("Invalid IATA code:", iata);
